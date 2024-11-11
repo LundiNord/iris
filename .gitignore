@@ -2,4 +2,6 @@
 tfjs-examples/
 MoCIoT-W2425-Uebung-Web.pdf
 .vscode/
-
+web/package-lock.json
+web/.parcel-cache
+web/node_modules

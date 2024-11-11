@@ -1,4 +1,47 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <!-- Für Viewportanzeige -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        Webseite mit HTML 5 Features - Demo Versuch 1
+    </title>
+    <link id="css" rel="stylesheet" type="text/css" href="index.css">
+    <!-- async Seite weiterladen während Skript eingelesen wird! -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.5.2"></script>
+    <script src="index.js" async type="module" ></script>
+</head>
+<body>
+<header class="containers">
+    <h1>
+        Webseite mit HTML 5 Features - Demo Versuch 1
+    </h1>
+    <section id="header_section" class="header_section_flex">
+        <!-- Ein Element kann zu mehreren Klassen gehören -->
+        <nav id="navigation" class="header_bold containers">
+            <!-- Side navigation -->
+            <p> Navigation </p>
+            <a href="index.html">Home</a>
+        </nav>
 
+    </section>
+</header>
+<main class="containers">
+    <h2> Camera Container </h2>
+    <div>
+        <section id="snippets">
+            <div id="camera" class="section_item">
+                <video id="video" width="160" height="120" autoplay muted></video>
+            </div>
+        </section>
+        <button id="camera_button">Test</button>
 
+        <div id="predictions"></div>
 
+        <div id="status"></div>
 
+    </div>
+</main>
+</body>
+</html>
