@@ -1,5 +1,4 @@
-import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers";
-env.allowLocalModels = false;
+import { AutoModel, AutoProcessor, RawImage } from "https://cdn.jsdelivr.net/npm/@xenova/transformers";
 
 /****************** Kamera **************************/
 // Reference to video element.
@@ -26,21 +25,13 @@ camera_button.addEventListener(
         imageContainer.innerHTML = "";
         const image = document.createElement("img");
         image.src = canvas.toDataURL('image/png');
+        image.onload = () => detect(image);
         imageContainer.appendChild(image);
-        detect(image);  // Uncomment this line to run the model
+        //detect(image);  // Uncomment this line to run the model
         ev.preventDefault();
     },
     false,
 );
-
-function resizeImage(image, width, height) {
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(image, 0, 0, width, height);
-    return canvas;
-}
 
 /****************** Ai Stuff **************************/
 
@@ -49,19 +40,30 @@ const imageContainer = document.getElementById("image-container");
 const status = document.getElementById("status");
 const result = document.getElementById("result");
 status.textContent = "Loading model...";
-const detector = await pipeline("object-detection", "Xenova/detr-resnet-50");
+const model = await AutoModel.from_pretrained('onnx-community/yolov10n', {
+    // quantized: false,    // (Optional) Use unquantized version.
+})
+const processor = await AutoProcessor.from_pretrained('onnx-community/yolov10n');
 status.textContent = "Ready";
 
-async function detect(img) {
-    status.textContent = "Analysing...";
-    const output = await detector(img.src, {
-        threshold: 0.7,
-        percentage: true,
-    });
-    status.textContent = "";
-    console.log("output", output);
-    result.textContent = "";
-   output.forEach(item => {
-    result.textContent += item.label + " " + item.score + "";
-});
+async function detect(imageElement) {
+    const url = 'https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/city-streets.jpg';
+    const image = await RawImage.read(url);
+    const { pixel_values, reshaped_input_sizes } = await processor(image);
+
+// Run object detection
+    const { output0 } = await model({ images: pixel_values });
+    const predictions = output0.tolist()[0];
+
+    const threshold = 0.7;
+    const [newHeight, newWidth] = reshaped_input_sizes[0]; // Reshaped height and width
+    const [xs, ys] = [image.width / newWidth, image.height / newHeight]; // x and y resize scales
+    for (const [xmin, ymin, xmax, ymax, score, id] of predictions) {
+        if (score < threshold) continue;
+
+        // Convert to original image coordinates
+        const bbox = [xmin * xs, ymin * ys, xmax * xs, ymax * ys].map(x => x.toFixed(2)).join(', ');
+        console.log(`Found "${model.config.id2label[id]}" at [${bbox}] with score ${score.toFixed(2)}.`);
+    }
 }
+
