@@ -8,13 +8,13 @@
         Webseite mit HTML 5 Features - Demo Versuch 2
     </title>
     <link id="css" rel="stylesheet" type="text/css" href="index.css">
-    <!-- async Seite weiterladen während Skript eingelesen wird! -->
+    <!-- async Seite weiterladen, während Skript eingelesen wird! -->
     <script src="index.js" async type="module" ></script>
 </head>
 <body>
 <header class="containers">
     <h1>
-        Webseite mit HTML 5 Features - Demo Versuch 2
+        Webseite mit HTML 5 Features – Demo Versuch 2
     </h1>
     <section id="header_section" class="header_section_flex">
         <!-- Ein Element kann zu mehreren Klassen gehören -->
@@ -34,7 +34,13 @@
                 <video id="video" width="160" height="120" autoplay muted></video>
             </div>
         </section>
-        <button id="camera_button">Test</button>
+        <button id="camera_button">Capture Image and Analyze</button>
+        <button id="camera_dreh_button">Change Camera</button>
+    </div>
+    <div class="video-options">
+        <select name="" id="" class="custom-select">
+            <option value="">Select camera</option>
+        </select>
     </div>
 </main>
 

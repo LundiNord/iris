@@ -1,13 +1,48 @@
-import { AutoModel, AutoProcessor, RawImage } from "https://cdn.jsdelivr.net/npm/@xenova/transformers";
+import {AutoModel, AutoProcessor, RawImage} from "https://cdn.jsdelivr.net/npm/@xenova/transformers";
 
 /****************** Kamera **************************/
 // Reference to video element.
 var video = document.querySelector("#video");
 
-// Ensure cross-browser functionality.
-navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+const videoConstraints = {
+    video: { facingMode: 'environment' }
+    }
+
+// Ensure cross-browser functionality
+navigator.mediaDevices.getUserMedia(videoConstraints)
     .then(stream => video.srcObject = stream)
     .catch(e => document.querySelector('#camera').innerHTML = "<p>Kamera nicht benutzbar!</p>");
+
+// Change Cameras
+const cameraOptions = document.querySelector('.video-options>select');
+const getCameraSelection = async () => {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoDevices = devices.filter(device => device.kind === 'videoinput');
+    const options = videoDevices.map(videoDevice => {
+        return `<option value="${videoDevice.deviceId}">${videoDevice.label}</option>`;
+    });
+    cameraOptions.innerHTML = options.join('');
+};
+getCameraSelection();
+
+var camera_change_button = document.querySelector('#camera_dreh_button')
+camera_change_button.addEventListener(
+    "click",
+    (ev) => {
+        if ('mediaDevices' in navigator && navigator.mediaDevices.getUserMedia) {
+            const updatedConstraints = {
+                ...videoConstraints,
+                deviceId: {
+                    exact: cameraOptions.value
+                }
+            };
+            navigator.mediaDevices.getUserMedia(updatedConstraints).then(stream => video.srcObject = stream);
+        }
+        ev.preventDefault();
+    },
+    false,
+);
+
 
 /******************************************************/
 
@@ -33,10 +68,9 @@ camera_button.addEventListener(
     false,
 );
 
+
 /****************** Ai Stuff **************************/
 
-let capturedImage = document.getElementById("video");
-const imageContainer = document.getElementById("image-container");
 const status = document.getElementById("status");
 const result = document.getElementById("result");
 status.textContent = "Loading model...";
@@ -45,7 +79,7 @@ const model = await AutoModel.from_pretrained('onnx-community/yolov10n', {
 })
 const processor = await AutoProcessor.from_pretrained('onnx-community/yolov10n');
 status.textContent = "Ready";
-autoDetect();
+setTimeout(autoDetect, 1000);       //hacky, ToDo only after camera feed is loaded
 
 async function detect(imageElement) {
     // Read image and run processor
@@ -65,7 +99,6 @@ async function detect(imageElement) {
         result.textContent = model.config.id2label[id];
     }
 }
-
 
 async function autoDetect() {
     const video = document.getElementById('video');
@@ -96,5 +129,3 @@ async function autoDetect() {
         setTimeout(autoDetect, 100);
     }
 }
-
-
