@@ -1,4 +1,5 @@
 import {AutoModel, AutoProcessor, RawImage} from "https://cdn.jsdelivr.net/npm/@xenova/transformers";
+import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers";
 
 /****************** Kamera **************************/
 // Reference to video element.
@@ -61,7 +62,6 @@ camera_button.addEventListener(
         const image = document.createElement("img");
         image.src = canvas.toDataURL('image/png');
         imageContainer.appendChild(image);
-        //detect(image);  // Uncomment this line to run the model
         image.onload = () => detect(image);
         ev.preventDefault();
     },
@@ -78,13 +78,17 @@ const model = await AutoModel.from_pretrained('onnx-community/yolov10n', {
     // quantized: false,    // (Optional) Use unquantized version.
 })
 const processor = await AutoProcessor.from_pretrained('onnx-community/yolov10n');
+// Create depth-estimation pipeline
+const depth_estimator = await pipeline('depth-estimation', 'onnx-community/depth-anything-v2-small');
 status.textContent = "Ready";
-setTimeout(autoDetect, 1000);       //hacky, ToDo only after camera feed is loaded
+setTimeout(autoDetect, 2000);       //hacky, ToDo only after camera feed is loaded
 
 async function detect(imageElement) {
     // Read image and run processor
     const image = await RawImage.read(imageElement.src);
-    const { pixel_values, reshaped_input_sizes } = await processor(image);
+    // Run depth detection
+    const { depth } = await depth_estimator(imageElement.src);
+    const { pixel_values, reshaped_input_sizes } = await processor(image);  //ToDo wait for model to load
     // Run object detection
     const { output0 } = await model({ images: pixel_values });
     const predictions = output0.tolist()[0];
@@ -94,9 +98,13 @@ async function detect(imageElement) {
     for (const [xmin, ymin, xmax, ymax, score, id] of predictions) {
         if (score < threshold) continue;
         // Convert to original image coordinates
+        const xMiddle = (xmax * xs) - (xmin * xs);
+        const yMiddle = (xmax * xs) - (ymin * ys);
+        const onedCoord = Math.round(xMiddle * yMiddle);
         const bbox = [xmin * xs, ymin * ys, xmax * xs, ymax * ys].map(x => x.toFixed(2)).join(', ');
         console.log(`Found "${model.config.id2label[id]}" at [${bbox}] with score ${score.toFixed(2)}.`);
-        result.textContent = model.config.id2label[id];
+        console.log(depth.data[onedCoord]);
+        result.textContent = result.textContent + model.config.id2label[id] +" depth: " + depth.data[onedCoord] + " | ";
     }
 }
 
@@ -112,6 +120,7 @@ async function autoDetect() {
     image.onload = async () => {
         // Read image and run processor
         const rawImage = await RawImage.read(image.src);
+        const { depth } = await depth_estimator(image.src);
         const {pixel_values, reshaped_input_sizes} = await processor(rawImage);
         // Run object detection
         const {output0} = await model({images: pixel_values});
@@ -122,9 +131,12 @@ async function autoDetect() {
         for (const [xmin, ymin, xmax, ymax, score, id] of predictions) {
             if (score < threshold) continue;
             // Convert to original image coordinates
+            const xMiddle = (xmax * xs) - (xmin * xs);
+            const yMiddle = (xmax * xs) - (ymin * ys);
+            const onedCoord = Math.round(xMiddle * yMiddle);
             const bbox = [xmin * xs, ymin * ys, xmax * xs, ymax * ys].map(x => x.toFixed(2)).join(', ');
             console.log(`Found "${model.config.id2label[id]}" at [${bbox}] with score ${score.toFixed(2)}.`);
-            result.textContent = result.textContent + "\n" + model.config.id2label[id];
+            result.textContent = result.textContent + model.config.id2label[id] +" depth: " + depth.data[onedCoord] + " | ";
         }
         setTimeout(autoDetect, 100);
     }
