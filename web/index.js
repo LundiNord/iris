@@ -80,8 +80,11 @@ const model = await AutoModel.from_pretrained('onnx-community/yolov10n', {
 const processor = await AutoProcessor.from_pretrained('onnx-community/yolov10n');
 // Create depth-estimation pipeline
 const depth_estimator = await pipeline('depth-estimation', 'onnx-community/depth-anything-v2-small');
+//Create TTS Pipeline
+const synthesizer = await pipeline('text-to-speech', 'Xenova/speecht5_tts', { quantized: false });
+const speaker_embeddings = 'https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/speaker_embeddings.bin';
 status.textContent = "Ready";
-setTimeout(autoDetect, 2000);       //hacky, ToDo only after camera feed is loaded
+//setTimeout(autoDetect, 2000);       //hacky, ToDo only after camera feed is loaded
 
 async function detect(imageElement) {
     // Read image and run processor
@@ -104,7 +107,28 @@ async function detect(imageElement) {
         const bbox = [xmin * xs, ymin * ys, xmax * xs, ymax * ys].map(x => x.toFixed(2)).join(', ');
         console.log(`Found "${model.config.id2label[id]}" at [${bbox}] with score ${score.toFixed(2)}.`);
         console.log(depth.data[onedCoord]);
-        result.textContent = result.textContent + model.config.id2label[id] +" depth: " + depth.data[onedCoord] + " | ";
+        const newText = model.config.id2label[id] +" depth: " + depth.data[onedCoord] + " | ";
+        result.textContent = result.textContent + newText;
+
+        const audioResult = await synthesizer(newText, { speaker_embeddings });
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // Create audio buffer
+        const audioBuffer = audioContext.createBuffer(
+            1, // mono
+            audioResult.audio.length,
+            audioResult.sampling_rate
+        );
+
+        // Copy audio data to buffer
+        audioBuffer.copyToChannel(audioResult.audio, 0);
+
+        // Create audio source
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+
+        // Play audio
+        source.start(0);
     }
 }
 
