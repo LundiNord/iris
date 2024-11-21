@@ -1,0 +1,31 @@
+
+try {
+            const audio = new Audio(audioResult.src);
+            audio.play();
+        } catch (e) {
+            console.error("An error occurred:", e);
+        }
+
+        console.log("test");
+
+
+
+
+
+ // Create audio buffer
+  const audioBuffer = audioContext.createBuffer(
+    1, // mono
+    result.audio.length,
+    result.sampling_rate
+  );
+
+  // Copy audio data to buffer
+  audioBuffer.copyToChannel(result.audio, 0);
+
+  // Create audio source
+  const source = audioContext.createBufferSource();
+  source.buffer = audioBuffer;
+  source.connect(audioContext.destination);
+
+  // Play audio
+  source.start(0);
