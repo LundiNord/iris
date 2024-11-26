@@ -19,7 +19,7 @@ const result = document.getElementById("result");
 
 let video = document.querySelector("#video");   // Reference to the video element.
 
-const videoConstraints = {
+let videoConstraints = {
     video: { facingMode: 'environment' }
 }
 
@@ -28,6 +28,7 @@ navigator.mediaDevices.getUserMedia(videoConstraints)
     .catch(e => document.querySelector('#camera').innerHTML = "<p>Kamera nicht benutzbar!</p>");
 
 // Change Cameras
+/*
 const cameraOptions = document.querySelector('.video-options>select');
 const getCameraSelection = async () => {
     const devices = await navigator.mediaDevices.enumerateDevices();
@@ -38,7 +39,7 @@ const getCameraSelection = async () => {
     cameraOptions.innerHTML = options.join('');
 };
 getCameraSelection();
-
+*/
 
 /****************** Buttons **************************/
 
@@ -46,20 +47,14 @@ let camera_change_button = document.querySelector('#camera_dreh_button')
 camera_change_button.addEventListener(
     "click",
     (ev) => {
-        if ('mediaDevices' in navigator && navigator.mediaDevices.getUserMedia) {
-            const updatedConstraints = {
-                ...videoConstraints,
-                deviceId: {
-                    exact: cameraOptions.value
-                }
-            };
-            navigator.mediaDevices.getUserMedia(updatedConstraints).then(stream => video.srcObject = stream);
-        }
+        videoConstraints.video.facingMode = 'user';
+        navigator.mediaDevices.getUserMedia(videoConstraints).then(stream => video.srcObject = stream);
         ev.preventDefault();
     },
     false,
 );
 
+/*
 let camera_button = document.querySelector('#camera_button')
 camera_button.addEventListener(
     "click",
@@ -80,6 +75,7 @@ camera_button.addEventListener(
     },
     false,
 );
+*/
 
 let audio_button = document.querySelector('#toggleAudioOut')
 audio_button.addEventListener(
@@ -185,51 +181,6 @@ async function loadDepthModel() {       // Create depth-estimation pipeline
 
 /****************** Ai Stuff **************************/
 
-
-async function detect(imageElement) {
-    // Read image and run processor
-    const image = await RawImage.read(imageElement.src);
-    // Run depth detection
-    const { depth } = await depth_estimator(imageElement.src);
-    const { pixel_values, reshaped_input_sizes } = await objectDectProcessor(image);  //ToDo wait for model to load
-    // Run object detection
-    const { output0 } = await objectDectModel({ images: pixel_values });
-    const predictions = output0.tolist()[0];
-    const threshold = 0.6;
-    const [newHeight, newWidth] = reshaped_input_sizes[0]; // Reshaped height and width
-    const [xs, ys] = [image.width / newWidth, image.height / newHeight]; // x and y resize scales
-    for (const [xmin, ymin, xmax, ymax, score, id] of predictions) {
-        if (score < threshold) continue;
-        // Convert to original image coordinates
-        const xMiddle = (xmax * xs) - (xmin * xs);
-        const yMiddle = (xmax * xs) - (ymin * ys);
-        const onedCoord = Math.round(xMiddle * yMiddle);
-        const middleOfPicture = (image.width * image.height) / 2;
-        const bbox = [xmin * xs, ymin * ys, xmax * xs, ymax * ys].map(x => x.toFixed(2)).join(', ');
-        console.log(`Found "${objectDectModel.config.id2label[id]}" at [${bbox}] with score ${score.toFixed(2)}.`);
-        console.log(depth.data[middleOfPicture]);
-        const newText = objectDectModel.config.id2label[id] +" depth: " + depth.data[middleOfPicture] + " | ";
-        result.textContent = result.textContent + newText;
-
-        const audioResult = await synthesizer(newText, { speaker_embeddings });
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        // Create audio buffer
-        const audioBuffer = audioContext.createBuffer(
-            1, // mono
-            audioResult.audio.length,
-            audioResult.sampling_rate
-        );
-        // Copy audio data to buffer
-        audioBuffer.copyToChannel(audioResult.audio, 0);
-        // Create audio source
-        const source = audioContext.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(audioContext.destination);
-        // Play audio
-        source.start(0);
-    }
-}
-
 async function playTextToSpeech(text) {
     if (!audioModelLoaded) {
         return;
@@ -304,3 +255,55 @@ function addTextToOutput(text) {
         playTextToSpeech(text);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+/****************** Localisation Stuff **************************/
+
+document.getElementById('lang-en').addEventListener('click', () => changeLanguage('en'));
+document.getElementById('lang-de').addEventListener('click', () => changeLanguage('de'));
+
+// Function to change language
+async function changeLanguage(lang) {
+    await setLanguagePreference(lang);
+    const langData = await fetchLanguageData(lang);
+    updateContent(langData);
+}
+
+// Function to set the language preference
+function setLanguagePreference(lang) {
+    localStorage.setItem('language', lang);
+}
+
+// Function to fetch language data
+async function fetchLanguageData(lang) {
+    const response = await fetch(`languages/${lang}.json`);
+    return response.json();
+}
+
+// Function to update content based on selected language
+function updateContent(langData) {
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        element.innerHTML = langData[key];
+    });
+}
+
+// Call updateContent() on page load            //FixMe
+window.addEventListener('DOMContentLoaded', async () => {
+    const userPreferredLanguage = localStorage.getItem('language') || 'en';
+    const langData = await fetchLanguageData(userPreferredLanguage);
+    updateContent(langData);
+});
+
+
+
