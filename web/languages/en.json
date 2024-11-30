@@ -1,3 +1,8 @@
 {
-  "home": "Home"
+  "home": "Home",
+  "contact": "Contact",
+  "turn_camera": "Turn Camera",
+  "audio_output": "Audio Output",
+  "object_dect": "Object Detection",
+  "depth_dect": "Depth Detection"
 }

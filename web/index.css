@@ -1,196 +1,228 @@
-/* Universalselektor */
-* {
-    font-family: Arial, Verdana, sans-serif;
-    text-align: justify;
-    font-size:1rem;
-    padding: 0;
-    margin: 0;
-    border-radius: 0.5rem;
-}
 
-/* Allgemeine Einstellungen, gelten für alle Elemente mit diesem Namen*/
-p {
-    font-size:1rem
-}
-
-h1 {
-    font-size: 1.8rem;
-    font-style: italic;
-}
-
-h2 {
-    font-size: 1.4rem;
-    font-style: italic;
-}
-
-h3 {
-    font-size: 1.2rem;
-}
-/* Für alle Überschriften Text zentrieren, untere margin 2rem*/
-h1, h2, h3 {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-/*Ende*/
-li {
-    font-size: 1.2rem;
-}
-
-main {
-    min-height: 23rem;
-    display:block;
-    text-align: center;
-}
-
-button {
-    font-size: 1.3rem;
-    width: 15rem;
-    height: 7rem;
-    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.6);
-    text-align: center;
-}
-
-#toggleAudioOut {
+* {     /* Universal Stuff */
+    font-family: "Courier New", monospace;
+    line-height: 1.45;
+    margin: 2rem auto 1rem;
+    max-width: 48rem;
+    padding: 0.25rem;
     background: gray;
 }
 
-#toggleObjectDetection {
-    background: gray;
-}
-
-#toggleDepthDetection {
-    background: gray;
-}
-
-/************************************************************************/
-/* Nachfahrenselektor */
-main img{
-    width: 15rem;
-    height: 15rem;
-}
-
-/************************************************************************/
-
-/* header, main, button{ */
-.containers {
-    margin: .7rem;
-    padding: .5rem;
-    border: none;
-    background-color: #e6f2f7;
-}
-
-.smallContainers {
-    margin: .1rem;
-    padding: .1rem;
-    border: none;
-    background-color: #e6f2f7;
-}
-
-.header_bold {
+h1 {    /* Headline */
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    margin-left: 0.5rem;
+    font-size: 3.998rem;
     font-weight: bold;
 }
 
-#header_article{
-    background: #CCFFFF;
+button {    /* Buttons */
+    background: darkgray;
 }
 
-#header_article > p{
-    margin-top: 2em;
+button:hover {
+    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.6);
 }
 
-/************************************************************************/
-/* Navigation*/
-#navigation {
-    min-width: 9rem;
-    background: #FF9900;
-    /***** Sticky *****
-    position: sticky;
-    top: 0;
-    width: 90%;*/
+#title-inside-header {
+    display: none;
 }
-
-#navigation a:link {
-    text-decoration: none;
-    font-size: 1.1rem;
-    color: #515151;
-    display: block;
+#navigation{
+    font-size: 1.25rem;
+    margin: 0.5rem;
+    padding: 0.5rem;
+    height: 2rem;
+    border: 2px solid black;
+    background: steelblue;
+    border-radius: 8px; /* Rounded corners */
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
 }
-
-/** Aufgabe Farbänderung für Hover #f1f1f1, #4f4f4f**/
+/* FixMe buttons zu hoch */
+#navigation a {
+    margin: 0.5rem;
+    padding: 0.5rem 1rem; /* Add padding to links */
+    background: steelblue;
+    color: black;
+    text-decoration: none; /* Remove underline */
+    border-radius: 4px; /* Rounded corners */
+    transition: background 0.3s, box-shadow 0.3s; /* Smooth transition */
+}
 #navigation a:hover {
-    color: #f1f1f1;
-    background-color: #4f4f4f;
+    color: white;
+    background: darkblue; /* Change background on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
+}
+#navigation a:last-of-type {
+    margin-left: auto;
 }
 
-/***************************************************************/
-/* Viewport Anzeige */
-
-#js-viewport-breitenanzeiger{
-    position: fixed;
-    top: 120px;
-    right: 20px;
-    z-index: 10000;
-    background: rgba(230,72,0,0.80);
-    border: 1px solid rgba(128,42,0,90);
-    box-shadow: 0px 0px 20px rgba(0,0,0,0.10);
-    padding: 10px;
-    font-size: 11px;
-    font-weight: bold;
-    color: rgba(255,255,255,1);
-    font-family: Arial, Verdana, sans-serif;
-    text-shadow: 1px 1px 1px rgba(0,0,0,0.50);
-    text-transform: uppercase;
+.grid-container {
+    display: grid;
+    column-gap: 1rem;
+    row-gap: 1rem;
+    margin-left: 0.25rem;
+    margin-right: 0.25rem;
+}
+.grid-item {
+    background: steelblue;
+    border: 2px solid black;
+    border-radius: 8px;
+    padding: 0.25rem;
+}
+#camera {
+    border-radius: 8px;
+    background: steelblue;
+}
+#video{
+    background: steelblue;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -100;
+    border-radius: 8px;
+}
+#config-container {
+    display: flex;
+    flex-flow: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+#config-container button {
+    width: 80%;
+    box-sizing: border-box; /* Ensure padding and border are included in the width */
+}
+#output-container p {
+    background: steelblue;
+    overflow-y: auto;
 }
 
-/***************************************************************/
-#header_article {
-    min-width:12rem;
+@media (max-width: 40rem){
+    #navigation a {
+        padding: 0.25rem;
+    }
+
+    .grid-container {
+        grid-template-columns: auto;
+        grid-template-rows: 25rem 4rem 20rem;
+    }
+    #cameraFeed-container {
+        grid-column: 1;
+        grid-row: 1;
+        overflow: hidden;
+        /* ToDo padding fehlt noch */
+    }
+    #config-container {
+        grid-column: 1;
+        grid-row: 2;
+        flex-flow: row;
+        justify-content: flex-start;
+        align-items: center;
+    }
+    #config-container button {
+        margin: 0.1rem;
+        height: 3rem;
+    }
+    #output-container {
+        grid-column: 1;
+        grid-row: 3;
+    }
+    #output-container p {
+        max-height: 18rem;
+    }
+
 }
 
-#snippets{
-    display:grid;
-    grid-template-columns: auto;
-    width:100%;
-    margin:0;
-    padding:0;
-}
+@media (min-width: 40rem) and (max-width: 60rem){
 
-#snippets p{
-    border: 2px solid;
-    border-color: #555555;
-    padding: 1em;
-}
-
-main>div{
-    width:100%;
-}
-.section_item {
-    background-color: #80cbc4;
-    border: 1px solid #fff;
-    font-size: 30px;
-    text-align: center;
-    padding: 1rem;
-}
-
-button{
-    width: 10rem;
-    height: 3rem;
-    padding-left: 1rem;
-}
-
-#geoloc{
-    display:table;
-    margin:auto;
-}
-
-#p_geoloc, #geoloc button{
-    display:table-cell;
-    margin:auto;
-}
-
-@media (min-width: 60rem){
-    #snippets{
-        display:grid;
-        grid-template-columns: auto auto;
+    .grid-container {
+        grid-template-columns: 30rem auto;
+        grid-template-rows: 25rem 20rem;
+    }
+    .grid-item {
+        border-radius: 8px;
+        padding: 0.25rem;
+    }
+    #cameraFeed-container {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    #video{
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -100;
+        border-radius: 8px;
+    }
+    #config-container {
+        grid-column: 2;
+        grid-row: 1;
+        flex-flow: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+    }
+    #output-container {
+        grid-column: 1 / 3;
+        grid-row: 2;
+    }
+    #output-container p {
+        max-height: 18rem;
     }
 }
+
+@media (min-width: 60rem) {     /* Big Screens */
+
+    #title-outside-header {
+        display: none;
+    }
+    #title-inside-header {
+        display: inline;
+        background: steelblue;
+        font-size: 3.998rem;
+    }
+    #navigation {
+        padding: 1rem;
+        width: 200rem;
+    }
+    #navigation h1 {
+        margin: 0;
+        font-size: 4rem;
+        font-weight: bold;
+    }
+
+    .grid-container {
+        grid-template-columns: 50rem auto;
+        grid-template-rows: 38rem 20rem;
+    }
+    #cameraFeed-container {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    #video{
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -100;
+        border-radius: 8px;
+    }
+    #config-container {
+        grid-column: 2;
+        grid-row: 1;
+        flex-flow: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+    }
+    #output-container {
+        grid-column: 1 / 3;
+        grid-row: 2;
+    }
+    #output-container p {
+        max-height: 18rem;
+    }
+
+
+
+
+}
+

@@ -12,8 +12,11 @@ let audioOutput = false;
 let objectDetection = false;
 let depthDetection = false;
 
+let language = "en";
+
 const status = document.getElementById("status");
 const result = document.getElementById("result");
+
 
 /****************** Kamera **************************/
 
@@ -251,31 +254,28 @@ async function autoDetect() {
 
 function addTextToOutput(text) {
     result.textContent = result.textContent + text + " | ";
+    result.scrollTop = result.scrollHeight;     // Auto-scroll to the bottom
     if (audioOutput) {
         playTextToSpeech(text);
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
 /****************** Localisation Stuff **************************/
+//Tutorial from https://medium.com/@nohanabil/building-a-multilingual-static-website-a-step-by-step-guide-7af238cc8505
 
-document.getElementById('lang-en').addEventListener('click', () => changeLanguage('en'));
-document.getElementById('lang-de').addEventListener('click', () => changeLanguage('de'));
+document.getElementById('lang').addEventListener('click', () => changeLanguage());
 
 // Function to change language
-async function changeLanguage(lang) {
-    await setLanguagePreference(lang);
-    const langData = await fetchLanguageData(lang);
+async function changeLanguage() {
+    if (language === 'en') {
+        language = 'de';
+        document.getElementById('lang').textContent = '🇬🇧';
+    } else {
+        language = 'en';
+        document.getElementById('lang').textContent = '🇩🇪';
+    }
+    await setLanguagePreference(language);
+    const langData = await fetchLanguageData(language);
     updateContent(langData);
 }
 
@@ -290,7 +290,7 @@ async function fetchLanguageData(lang) {
     return response.json();
 }
 
-// Function to update content based on selected language
+// Function to update content based on the selected language
 function updateContent(langData) {
     document.querySelectorAll('[data-i18n]').forEach(element => {
         const key = element.getAttribute('data-i18n');

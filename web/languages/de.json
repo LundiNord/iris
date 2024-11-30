@@ -1,3 +1,9 @@
 {
-  "home": "Hauptseite"
+  "home": "Hauptseite",
+  "contact": "Impressum",
+  "turn_camera": "Kamera drehen",
+  "audio_output": "Audioausgabe",
+  "object_dect": "Objekt erkennung",
+  "depth_dect": "Tiefen erkennung",
+
 }

@@ -8,56 +8,48 @@
         Iris - AI Environment Detector
     </title>
     <link rel="manifest" href="/web/manifest.json">     <!-- PWA Manifest -->
+    <link id="css_reset" rel="stylesheet" type="text/css" href="reset.css">
     <link id="css" rel="stylesheet" type="text/css" href="index.css">
     <!-- async Seite weiterladen, während Skript eingelesen wird! -->
     <script src="index.js" async type="module" ></script>
 </head>
+
 <body>
-<header class="containers">
-    <h1>
-        Iris
-    </h1>
-    <section id="header_section" class="header_section_flex">
-        <nav id="navigation" class="header_bold containers">
+<header id="header">
+    <h1 id="title-outside-header">Iris</h1>
+    <div id="navigation" class="flex-container">
+        <h1 id="title-inside-header">Iris</h1>
             <!-- Side navigation -->
-            <p> Navigation </p>
             <a href="index.html" data-i18n="home">Home</a>
-            <a href="impressum.html">Impressum</a>
+            <a href="impressum.html" data-i18n="contact">Contact</a>
             <a href="https://github.com/LundiNord/html5Website/tree/transformerjs">GitHub</a>
-        </nav>
-    </section>
-    <section id="language_section" class="header_section_flex">
-        <a id="lang-en">English</a>
-        <a id="lang-de">Deutsch</a>
-    </section>
+            <a id="lang">🇬🇧</a>
+    </div>
 </header>
-<main class="containers">    <!--Video feed Container-->
-    <h2> Camera Feed </h2>
-    <div>
-        <section id="snippets">
-            <div id="camera" class="section_item">
+
+<main class="grid-container">
+
+    <div class="grid-item" id="cameraFeed-container">     <!--Video feed Container-->
+        <section id="cameraFeed">
+            <div id="camera">
                 <video id="video" width="160" height="120" autoplay muted></video>
             </div>
         </section>
     </div>
-<!--    <div class="video-options">-->
-<!--        <select name="" id="" class="custom-select">-->
-<!--            <option value="">Select camera</option>-->
-<!--        </select>-->
-<!--    </div>-->
-</main>
 
-<main class="smallContainers">      <!--Config Container-->
-    <button id="camera_dreh_button">Turn Camera</button>
-    <button id="toggleAudioOut">Audio Output</button>
-    <button id="toggleObjectDetection">Object Detection</button>
-    <button id="toggleDepthDetection">Depth Detection</button>
-</main>
+    <div class="grid-item" id="config-container">     <!--Config Container-->
+        <button id="camera_dreh_button" data-i18n="turn_camera">Turn Camera</button>
+        <button id="toggleAudioOut" data-i18n="audio_output">Audio Output</button>
+        <button id="toggleObjectDetection" data-i18n="object_dect">Object Detection</button>
+        <button id="toggleDepthDetection" data-i18n="depth_dect">Depth Detection</button>
+    </div>
 
-<main class="containers">            <!--Output Container-->
-    <div id="image-container"></div>
-    <p id="status"></p>
-    <P id="result"></P>
+    <div class="grid-item" id="output-container">     <!--Output Container-->
+<!--        <div id="image-container"></div>-->
+        <p id="status"></p>
+        <P id="result"></P>
+    </div>
+
 </main>
 
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c3242506f1824ef39c459718de1e88f6"}'></script><!-- End Cloudflare Web Analytics -->
