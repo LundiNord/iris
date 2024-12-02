@@ -1,8 +1,7 @@
-import {AutoModel, AutoProcessor, RawImage} from "https://cdn.jsdelivr.net/npm/@xenova/transformers";
-import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers";
+import {AutoModel, AutoProcessor, RawImage} from "./libs/xenova_transformers.js";
+import { pipeline } from "./libs/huggingface_transformers.js";
 
 /****************** Constants **************************/
-
 let audioModelLoaded = false;
 let objectDetectionModelLoaded = false;
 let depthModelLoaded = false;
@@ -154,7 +153,7 @@ setTimeout(autoDetect, 2000);       //hacky, ToDo only after camera feed is load
 async function loadAudioModel() {
     status.textContent = "Audio Model Loading...";
     synthesizer = await pipeline('text-to-speech', 'Xenova/speecht5_tts', { quantized: false });
-    speaker_embeddings = 'https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/speaker_embeddings.bin';
+    speaker_embeddings = './libs/speaker_embeddings.bin';
     audioModelLoaded = true;
     status.textContent = "Ready";
     audio_button.style.backgroundColor = "green";
@@ -304,6 +303,3 @@ window.addEventListener('DOMContentLoaded', async () => {
     const langData = await fetchLanguageData(userPreferredLanguage);
     updateContent(langData);
 });
-
-
-
