@@ -173,6 +173,12 @@ button:hover {
 
 @media (min-width: 60rem) {     /* Big Screens */
 
+    * {     /* Universal Stuff */
+        margin: 2rem auto 1rem;
+        max-width: 200rem;
+        padding: 0.25rem;
+    }
+
     #title-outside-header {
         display: none;
     }
@@ -180,10 +186,11 @@ button:hover {
         display: inline;
         background: steelblue;
         font-size: 3.998rem;
+        text-align: center;
     }
     #navigation {
+        width: auto;
         padding: 1rem;
-        width: 200rem;
     }
     #navigation h1 {
         margin: 0;
@@ -212,10 +219,12 @@ button:hover {
         flex-flow: column;
         justify-content: flex-start;
         align-items: flex-start;
+        max-width: 30rem;
     }
     #output-container {
         grid-column: 1 / 3;
         grid-row: 2;
+        max-width: 81rem;
     }
     #output-container p {
         max-height: 18rem;

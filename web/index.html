@@ -10,7 +10,6 @@
     <link rel="manifest" href="/web/manifest.json">     <!-- PWA Manifest -->
     <link id="css_reset" rel="stylesheet" type="text/css" href="reset.css">
     <link id="css" rel="stylesheet" type="text/css" href="index.css">
-    <!-- async Seite weiterladen, während Skript eingelesen wird! -->
     <script src="index.js" async type="module" ></script>
 </head>
 
@@ -18,7 +17,7 @@
 <header id="header">
     <h1 id="title-outside-header">Iris</h1>
     <div id="navigation" class="flex-container">
-        <h1 id="title-inside-header">Iris</h1>
+            <h1 id="title-inside-header">Iris</h1>
             <!-- Side navigation -->
             <a href="index.html" data-i18n="home">Home</a>
             <a href="impressum.html" data-i18n="contact">Contact</a>
@@ -32,7 +31,7 @@
     <div class="grid-item" id="cameraFeed-container">     <!--Video feed Container-->
         <section id="cameraFeed">
             <div id="camera">
-                <video id="video" width="160" height="120" autoplay muted></video>
+                <video id="video" width="160" height="120" autoplay muted playsinline></video>
             </div>
         </section>
     </div>
@@ -45,7 +44,6 @@
     </div>
 
     <div class="grid-item" id="output-container">     <!--Output Container-->
-<!--        <div id="image-container"></div>-->
         <p id="status"></p>
         <P id="result"></P>
     </div>

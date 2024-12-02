@@ -1,4 +1,10 @@
 
+
+- gleicher Output nur einmal
+- besseres Output format
+
+
+
 try {
             const audio = new Audio(audioResult.src);
             audio.play();
