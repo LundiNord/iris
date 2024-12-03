@@ -5,7 +5,7 @@ import { pipeline } from "./libs/huggingface_transformers.js";
 let audioModelLoaded = false;
 let objectDetectionModelLoaded = false;
 let depthModelLoaded = false;
-let cameraLoaded = true;    //FixMe
+let cameraLoaded = false;
 
 let audioOutput = false;
 let objectDetection = false;
@@ -16,6 +16,13 @@ let language = "en";
 const status = document.getElementById("status");
 const result = document.getElementById("result");
 
+const buttonStandardColor = "gray";
+const buttonSuccessColor = "green";
+const readyString = "Ready";
+
+let lastOutput = "";
+
+let cameraFacingUser = false;
 
 /****************** Kamera **************************/
 
@@ -25,23 +32,18 @@ let videoConstraints = {
     video: { facingMode: 'environment' }
 }
 
-navigator.mediaDevices.getUserMedia(videoConstraints)
-    .then(stream => video.srcObject = stream)
-    .catch(e => document.querySelector('#camera').innerHTML = "<p>Kamera nicht benutzbar!</p>");
-
-// Change Cameras
-/*
-const cameraOptions = document.querySelector('.video-options>select');
-const getCameraSelection = async () => {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const videoDevices = devices.filter(device => device.kind === 'videoinput');
-    const options = videoDevices.map(videoDevice => {
-        return `<option value="${videoDevice.deviceId}">${videoDevice.label}</option>`;
-    });
-    cameraOptions.innerHTML = options.join('');
-};
-getCameraSelection();
-*/
+refreshCamera();
+async function refreshCamera() {
+    navigator.mediaDevices.getUserMedia(videoConstraints)
+        .then(stream => {
+            video.srcObject = stream;
+            cameraLoaded = true;
+        })
+        .catch(e => {
+            document.querySelector('#camera').innerHTML = "<p>Kamera nicht benutzbar!</p>";
+            cameraLoaded = false;
+        });
+}
 
 /****************** Buttons **************************/
 
@@ -49,8 +51,14 @@ let camera_change_button = document.querySelector('#camera_dreh_button')
 camera_change_button.addEventListener(
     "click",
     (ev) => {
-        videoConstraints.video.facingMode = 'user';
-        navigator.mediaDevices.getUserMedia(videoConstraints).then(stream => video.srcObject = stream);
+        if (cameraFacingUser) {
+            videoConstraints.video.facingMode = 'environment';
+            cameraFacingUser = false;
+        } else {
+            videoConstraints.video.facingMode = 'user';
+            cameraFacingUser = true;
+        }
+        refreshCamera();
         ev.preventDefault();
     },
     false,
@@ -85,13 +93,13 @@ audio_button.addEventListener(
     (ev) => {
         if (audioOutput) {
             audioOutput = false;
-            audio_button.style.backgroundColor = "gray";
+            audio_button.style.backgroundColor = buttonStandardColor;
         } else {
             audioOutput = true;
             if (!audioModelLoaded) {
                 loadAudioModel();
             } else {
-                audio_button.style.backgroundColor = "green";
+                audio_button.style.backgroundColor = buttonSuccessColor;
             }
         }
         //ev.preventDefault();
@@ -105,13 +113,13 @@ objectDetection_button.addEventListener(
     (ev) => {
         if (objectDetection) {
             objectDetection = false;
-            objectDetection_button.style.backgroundColor = "gray";
+            objectDetection_button.style.backgroundColor = buttonStandardColor;
         } else {
             objectDetection = true;
             if (!objectDetectionModelLoaded) {
                 loadObjectModel();
             } else {
-                objectDetection_button.style.backgroundColor = "green";
+                objectDetection_button.style.backgroundColor = buttonSuccessColor;
             }
         }
         //ev.preventDefault();
@@ -125,13 +133,13 @@ depthDetection_button.addEventListener(
     (ev) => {
         if (depthDetection) {
             depthDetection = false;
-            depthDetection_button.style.backgroundColor = "gray";
+            depthDetection_button.style.backgroundColor = buttonStandardColor;
         } else {
             depthDetection = true;
             if (!depthModelLoaded) {
                 loadDepthModel();
             } else {
-                depthDetection_button.style.backgroundColor = "green";
+                depthDetection_button.style.backgroundColor = buttonSuccessColor;
             }
         }
         //ev.preventDefault();
@@ -147,7 +155,7 @@ let depth_estimator = await pipeline('depth-estimation', 'onnx-community/depth-a
 // TTS Pipeline
 let synthesizer;
 let speaker_embeddings;
-status.textContent = "Ready";
+status.textContent = readyString;
 setTimeout(autoDetect, 2000);       //hacky, ToDo only after camera feed is loaded
 
 async function loadAudioModel() {
@@ -155,8 +163,8 @@ async function loadAudioModel() {
     synthesizer = await pipeline('text-to-speech', 'Xenova/speecht5_tts', { quantized: false });
     speaker_embeddings = './libs/speaker_embeddings.bin';
     audioModelLoaded = true;
-    status.textContent = "Ready";
-    audio_button.style.backgroundColor = "green";
+    status.textContent = readyString;
+    audio_button.style.backgroundColor = buttonSuccessColor;
     audioOutput = true;
 }
 
@@ -167,8 +175,8 @@ async function loadObjectModel() {
     })
     objectDectProcessor = await AutoProcessor.from_pretrained('onnx-community/yolov10n');
     objectDetectionModelLoaded = true;
-    status.textContent = "Ready";
-    objectDetection_button.style.backgroundColor = "green";
+    status.textContent = readyString;
+    objectDetection_button.style.backgroundColor = buttonSuccessColor;
     objectDetection = true;
 }
 
@@ -176,8 +184,8 @@ async function loadDepthModel() {       // Create depth-estimation pipeline
     status.textContent = "Depth Detection Model Loading...";
     depth_estimator = await pipeline('depth-estimation', 'onnx-community/depth-anything-v2-small');
     depthModelLoaded = true;
-    status.textContent = "Ready";
-    depthDetection_button.style.backgroundColor = "green";
+    status.textContent = readyString;
+    depthDetection_button.style.backgroundColor = buttonSuccessColor;
     depthDetection = true;
 }
 
@@ -189,7 +197,7 @@ async function playTextToSpeech(text) {
     }
     const audioResult = await synthesizer(text, { speaker_embeddings });
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    // Create audio buffer
+    // Create an audio buffer
     const audioBuffer = audioContext.createBuffer(
         1, // mono
         audioResult.audio.length,
@@ -223,23 +231,29 @@ function getImageFromCamera() {
 
 async function autoDetect() {
     if (!cameraLoaded) {
+        console.log("Camera not loaded");
         setTimeout(autoDetect, 1000);
+        return;
     }
     const image = await getImageFromCamera();
     const rawImage = await RawImage.read(image.src);
     if (objectDetection) {
-        const {pixel_values, reshaped_input_sizes} = await objectDectProcessor(rawImage);
-        // Run object detection
-        const {output0} = await objectDectModel({images: pixel_values});
-        const predictions = output0.tolist()[0];
-        const threshold = 0.6;
-        const [newHeight, newWidth] = reshaped_input_sizes[0]; // Reshaped height and width
-        const [xs, ys] = [rawImage.width / newWidth, rawImage.height / newHeight]; // x and y resize scales
-        for (const [xmin, ymin, xmax, ymax, score, id] of predictions) {
-            if (score < threshold) continue;
-            const bbox = [xmin * xs, ymin * ys, xmax * xs, ymax * ys].map(x => x.toFixed(2)).join(', '); // Convert to original image coordinates
-            console.log(`Found "${objectDectModel.config.id2label[id]}" at [${bbox}] with score ${score.toFixed(2)}.`);
-            addTextToOutput(objectDectModel.config.id2label[id]);
+        try {
+            const {pixel_values, reshaped_input_sizes} = await objectDectProcessor(rawImage);
+            // Run object detection
+            const {output0} = await objectDectModel({images: pixel_values});
+            const predictions = output0.tolist()[0];
+            const threshold = 0.6;
+            const [newHeight, newWidth] = reshaped_input_sizes[0]; // Reshaped height and width
+            const [xs, ys] = [rawImage.width / newWidth, rawImage.height / newHeight]; // x and y resize scales
+            for (const [xmin, ymin, xmax, ymax, score, id] of predictions) {
+                if (score < threshold) continue;
+                const bbox = [xmin * xs, ymin * ys, xmax * xs, ymax * ys].map(x => x.toFixed(2)).join(', '); // Convert to original image coordinates
+                console.log(`Found "${objectDectModel.config.id2label[id]}" at [${bbox}] with score ${score.toFixed(2)}.`);
+                addTextToOutput(objectDectModel.config.id2label[id]);
+            }
+        } catch (error) {
+            console.error(error);
         }
     }
     if (depthDetection) {
@@ -252,14 +266,17 @@ async function autoDetect() {
 }
 
 function addTextToOutput(text) {
-    result.textContent = result.textContent + text + " | ";
-    result.scrollTop = result.scrollHeight;     // Auto-scroll to the bottom
+    if (text !== lastOutput) {
+        result.textContent = result.textContent + text + " | ";
+        result.scrollTop = result.scrollHeight;     // Auto-scroll to the bottom
+        lastOutput = text;
+    }
     if (audioOutput) {
         playTextToSpeech(text);
     }
 }
 
-/****************** Localisation Stuff **************************/
+/****************** Localization Stuff **************************/
 //Tutorial from https://medium.com/@nohanabil/building-a-multilingual-static-website-a-step-by-step-guide-7af238cc8505
 
 document.getElementById('lang').addEventListener('click', () => changeLanguage());
