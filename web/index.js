@@ -1,5 +1,6 @@
 import {AutoModel, AutoProcessor, RawImage} from "./libs/xenova_transformers.js";
 import { pipeline } from "./libs/huggingface_transformers.js";
+import { getTranslation, language } from './localisation.js';
 
 /****************** Constants **************************/
 let audioModelLoaded = false;
@@ -11,14 +12,11 @@ let audioOutput = false;
 let objectDetection = false;
 let depthDetection = false;
 
-let language = "en";
-
 const status = document.getElementById("status");
 const result = document.getElementById("result");
 
 const buttonStandardColor = "gray";
 const buttonSuccessColor = "green";
-const readyString = "Ready";
 
 let lastOutput = "";
 
@@ -155,36 +153,36 @@ let depth_estimator = await pipeline('depth-estimation', 'onnx-community/depth-a
 // TTS Pipeline
 let synthesizer;
 let speaker_embeddings;
-status.textContent = readyString;
+setStatus(true, "");
 setTimeout(autoDetect, 2000);       //hacky, ToDo only after camera feed is loaded
 
 async function loadAudioModel() {
-    status.textContent = "Audio Model Loading...";
+    setStatus(false, "audio_output");
     synthesizer = await pipeline('text-to-speech', 'Xenova/speecht5_tts', { quantized: false });
     speaker_embeddings = './libs/speaker_embeddings.bin';
     audioModelLoaded = true;
-    status.textContent = readyString;
+    setStatus(true, "");
     audio_button.style.backgroundColor = buttonSuccessColor;
     audioOutput = true;
 }
 
 async function loadObjectModel() {
-    status.textContent = "Object Detection Model Loading...";
+    setStatus(false, "object_dect");
     objectDectModel = await AutoModel.from_pretrained('onnx-community/yolov10n', {
         // quantized: false,    // (Optional) Use unquantized version.
     })
     objectDectProcessor = await AutoProcessor.from_pretrained('onnx-community/yolov10n');
     objectDetectionModelLoaded = true;
-    status.textContent = readyString;
+    setStatus(true, "");
     objectDetection_button.style.backgroundColor = buttonSuccessColor;
     objectDetection = true;
 }
 
 async function loadDepthModel() {       // Create depth-estimation pipeline
-    status.textContent = "Depth Detection Model Loading...";
+    setStatus(false, "depth_dect");
     depth_estimator = await pipeline('depth-estimation', 'onnx-community/depth-anything-v2-small');
     depthModelLoaded = true;
-    status.textContent = readyString;
+    setStatus(true, "");
     depthDetection_button.style.backgroundColor = buttonSuccessColor;
     depthDetection = true;
 }
@@ -265,6 +263,9 @@ async function autoDetect() {
     setTimeout(autoDetect, 100);
 }
 
+/****************** Output Stuff **************************/
+
+
 function addTextToOutput(text) {
     if (text !== lastOutput) {
         result.textContent = result.textContent + text + " | ";
@@ -276,47 +277,11 @@ function addTextToOutput(text) {
     }
 }
 
-/****************** Localization Stuff **************************/
-//Tutorial from https://medium.com/@nohanabil/building-a-multilingual-static-website-a-step-by-step-guide-7af238cc8505
-
-document.getElementById('lang').addEventListener('click', () => changeLanguage());
-
-// Function to change language
-async function changeLanguage() {
-    if (language === 'en') {
-        language = 'de';
-        document.getElementById('lang').textContent = '🇬🇧';
-    } else {
-        language = 'en';
-        document.getElementById('lang').textContent = '🇩🇪';
+function setStatus(ready, model) {
+    model = getTranslation(model);
+    if (language === "en") {
+        status.textContent = ready ? "Ready" : "Loading " + model + "...";
+    } else if(language === "de") {
+        status.textContent = ready ? "Bereit" : model + " wird geladen...";
     }
-    await setLanguagePreference(language);
-    const langData = await fetchLanguageData(language);
-    updateContent(langData);
 }
-
-// Function to set the language preference
-function setLanguagePreference(lang) {
-    localStorage.setItem('language', lang);
-}
-
-// Function to fetch language data
-async function fetchLanguageData(lang) {
-    const response = await fetch(`languages/${lang}.json`);
-    return response.json();
-}
-
-// Function to update content based on the selected language
-function updateContent(langData) {
-    document.querySelectorAll('[data-i18n]').forEach(element => {
-        const key = element.getAttribute('data-i18n');
-        element.innerHTML = langData[key];
-    });
-}
-
-// Call updateContent() on page load            //FixMe
-window.addEventListener('DOMContentLoaded', async () => {
-    const userPreferredLanguage = localStorage.getItem('language') || 'en';
-    const langData = await fetchLanguageData(userPreferredLanguage);
-    updateContent(langData);
-});
