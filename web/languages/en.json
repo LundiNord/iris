@@ -4,5 +4,13 @@
   "turn_camera": "Turn Camera",
   "audio_output": "Audio Output",
   "object_dect": "Object Detection",
-  "color_dect": "Color Detection"
+  "color_dect": "Color Detection",
+  "green": "Green",
+  "red": "Red",
+  "blue": "Blue",
+  "yellow": "Yellow",
+  "cyan": "Cyan",
+  "magenta": "Magenta",
+  "white": "White",
+  "black": "Black"
 }

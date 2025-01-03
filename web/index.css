@@ -98,6 +98,10 @@ button:hover {
     overflow-y: auto;
 }
 
+a { /* background of links */
+    background: steelblue;
+}
+
 @media (max-width: 40rem){
     #navigation a {
         padding: 0.25rem;

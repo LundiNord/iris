@@ -23,7 +23,7 @@ let cameraFacingUser = false;
 let middleOfPictureX = 0;
 let middleOfPictureY = 0;
 
-/****************** Kamera **************************/
+/****************** Camera **************************/
 
 let video = document.querySelector("#video");   // Reference to the video element.
 
@@ -121,18 +121,45 @@ colorDetection_button.addEventListener(
     false,
 );
 
+/****************** Color Definitions **************************/
+
+tracking.ColorTracker.registerColor('green', function(r, g, b) {
+    return r < 50 && g > 200 && b < 50;
+});
+tracking.ColorTracker.registerColor('red', function(r, g, b) {
+    return r > 200 && g < 50 && b < 50;
+});
+tracking.ColorTracker.registerColor('blue', function(r, g, b) {
+    return r < 50 && g < 50 && b > 200;
+});
+tracking.ColorTracker.registerColor('yellow', function(r, g, b) {
+    return r > 200 && g > 200 && b < 50;
+});
+tracking.ColorTracker.registerColor('cyan', function(r, g, b) {
+    return r < 50 && g > 200 && b > 200;
+});
+tracking.ColorTracker.registerColor('magenta', function(r, g, b) {
+    return r > 200 && g < 50 && b > 200;
+});
+tracking.ColorTracker.registerColor('white', function(r, g, b) {
+    return r > 200 && g > 200 && b > 200;
+});
+tracking.ColorTracker.registerColor('black', function(r, g, b) {
+    return r < 50 && g < 50 && b < 50;
+});
+
 /****************** Ai Setup **************************/
 
 let objectDectModel;
-let objectDectProcessor;    //TTS Pipeline
+let objectDectProcessor;
 let synthesizer;
 let speaker_embeddings;
-let colorTracker = new tracking.ColorTracker(['magenta', 'cyan', 'yellow']);
+let colorTracker = new tracking.ColorTracker(['red', 'blue', 'green', 'yellow', 'cyan', 'magenta', 'white', 'black']);
 let colorTrackerTask = tracking.track('#video', colorTracker);
 colorTrackerTask.stop();
 
 setStatus(true, "");
-setTimeout(autoDetect, 2000);       //hacky, ToDo only after camera feed is loaded
+setTimeout(autoDetect, 2000);
 
 async function loadAudioModel() {
     setStatus(false, "audio_output");
@@ -217,7 +244,7 @@ async function autoDetect() {
                 if (score < threshold) continue;
                 const bbox = [xmin * xs, ymin * ys, xmax * xs, ymax * ys].map(x => x.toFixed(2)).join(', '); // Convert to original image coordinates
                 console.log(`Found "${objectDectModel.config.id2label[id]}" at [${bbox}] with score ${score.toFixed(2)}.`);
-                addTextToOutput(objectDectModel.config.id2label[id]);
+                addTextToOutput(objectDectModel.config.id2label[id],null);
             }
         } catch (error) {
             console.error(error);
@@ -235,21 +262,32 @@ colorTracker.on('track', function (event) {
     event.data.forEach(function (rect) {
         if (middleOfPictureY > rect.y && middleOfPictureY < rect.y + rect.height && middleOfPictureX > rect.x && middleOfPictureX < rect.x + rect.width) {
             console.log(rect.x, rect.y, rect.width, rect.height, rect.color);
+            addTextToOutput(null, rect.color);
         }
     });
 });
 
-/****************** Output Stuff **************************/
+/****************** Output **************************/
 
-function addTextToOutput(text) {
-    text = getAiOutputTranslation(text);
+function addTextToOutput(aiText, colorText) {
+    let text = lastOutput;
+    if (aiText !== null) {
+        aiText = getAiOutputTranslation(aiText);
+        let fields = text.split('|');
+        text = aiText + " | " + fields[1];
+    }
+    if (colorText !== null) {
+        colorText = getTranslation(colorText);
+        let fields = text.split('|');
+        text = fields[0] + " | " + colorText;
+    }
     if (text !== lastOutput) {
         result.textContent = result.textContent + text + " | ";
         result.scrollTop = result.scrollHeight;     // Auto-scroll to the bottom
         lastOutput = text;
-    }
-    if (audioOutput) {
-        playTextToSpeech(text);
+        if (audioOutput) {
+            playTextToSpeech(text);
+        }
     }
 }
 

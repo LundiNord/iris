@@ -1,9 +1,10 @@
 
+/****************** Constants **************************/
 export let language = "en";
 let langData = await fetchLanguageData(language);
 let aiLangData = await fetchAiLanguageData(language);
 
-/****************** Localization Stuff **************gDat************/
+/****************** Localization **********************/
 //Tutorial from https://medium.com/@nohanabil/building-a-multilingual-static-website-a-step-by-step-guide-7af238cc8505
 
 document.getElementById('lang').addEventListener('click', () => {
