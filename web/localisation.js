@@ -1,8 +1,9 @@
 
 export let language = "en";
 let langData = await fetchLanguageData(language);
+let aiLangData = await fetchAiLanguageData(language);
 
-/****************** Localization Stuff **************************/
+/****************** Localization Stuff **************gDat************/
 //Tutorial from https://medium.com/@nohanabil/building-a-multilingual-static-website-a-step-by-step-guide-7af238cc8505
 
 document.getElementById('lang').addEventListener('click', () => {
@@ -24,6 +25,7 @@ async function setLanguage(lang) {
     }
     await setLanguagePreference(language);
     langData = await fetchLanguageData(language);
+    aiLangData = await fetchAiLanguageData(language);
     updateContent(langData);
 }
 
@@ -35,6 +37,10 @@ function setLanguagePreference(lang) {
 // Function to fetch language data
 async function fetchLanguageData(lang) {
     const response = await fetch(`languages/${lang}.json`);
+    return response.json();
+}
+async function fetchAiLanguageData(lang) {
+    const response = await fetch(`languages/${lang}_ai.json`);
     return response.json();
 }
 
@@ -54,4 +60,8 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 export function getTranslation(identifier) {
     return langData[identifier] || identifier;
+}
+
+export function getAiOutputTranslation(identifier) {
+    return aiLangData[identifier] || identifier;
 }

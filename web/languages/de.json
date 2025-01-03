@@ -4,5 +4,5 @@
   "turn_camera": "Kamera drehen",
   "audio_output": "Audioausgabe",
   "object_dect": "Objekt erkennung",
-  "depth_dect": "Tiefen erkennung"
+  "color_dect": "Farben erkennung"
 }

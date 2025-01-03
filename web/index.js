@@ -1,16 +1,15 @@
 import {AutoModel, AutoProcessor, RawImage} from "./libs/xenova_transformers.js";
 import { pipeline } from "./libs/huggingface_transformers.js";
-import { getTranslation, language } from './localisation.js';
+import {getAiOutputTranslation, getTranslation, language} from './localisation.js';
 
 /****************** Constants **************************/
 let audioModelLoaded = false;
 let objectDetectionModelLoaded = false;
-let depthModelLoaded = false;
 let cameraLoaded = false;
 
 let audioOutput = false;
 let objectDetection = false;
-let depthDetection = false;
+let colourDetection = false;
 
 const status = document.getElementById("status");
 const result = document.getElementById("result");
@@ -21,6 +20,8 @@ const buttonSuccessColor = "green";
 let lastOutput = "";
 
 let cameraFacingUser = false;
+let middleOfPictureX = 0;
+let middleOfPictureY = 0;
 
 /****************** Kamera **************************/
 
@@ -62,29 +63,6 @@ camera_change_button.addEventListener(
     false,
 );
 
-/*
-let camera_button = document.querySelector('#camera_button')
-camera_button.addEventListener(
-    "click",
-    (ev) => {
-        const video = document.getElementById('video');
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageContainer = document.getElementById("image-container");
-        imageContainer.innerHTML = "";
-        const image = document.createElement("img");
-        image.src = canvas.toDataURL('image/png');
-        imageContainer.appendChild(image);
-        image.onload = () => detect(image);
-        ev.preventDefault();
-    },
-    false,
-);
-*/
-
 let audio_button = document.querySelector('#toggleAudioOut')
 audio_button.addEventListener(
     "click",
@@ -125,20 +103,18 @@ objectDetection_button.addEventListener(
     false,
 );
 
-let depthDetection_button = document.querySelector('#toggleDepthDetection')
-depthDetection_button.addEventListener(
+let colorDetection_button = document.querySelector('#toggleColorDetection')
+colorDetection_button.addEventListener(
     "click",
     (ev) => {
-        if (depthDetection) {
-            depthDetection = false;
-            depthDetection_button.style.backgroundColor = buttonStandardColor;
+        if (colourDetection) {
+            colourDetection = false;
+            colorDetection_button.style.backgroundColor = buttonStandardColor;
+            colorTrackerTask.stop();
         } else {
-            depthDetection = true;
-            if (!depthModelLoaded) {
-                loadDepthModel();
-            } else {
-                depthDetection_button.style.backgroundColor = buttonSuccessColor;
-            }
+            colourDetection = true;
+            colorDetection_button.style.backgroundColor = buttonSuccessColor;
+            colorTrackerTask.run();
         }
         //ev.preventDefault();
     },
@@ -148,11 +124,13 @@ depthDetection_button.addEventListener(
 /****************** Ai Setup **************************/
 
 let objectDectModel;
-let objectDectProcessor;
-let depth_estimator = await pipeline('depth-estimation', 'onnx-community/depth-anything-v2-small');
-// TTS Pipeline
+let objectDectProcessor;    //TTS Pipeline
 let synthesizer;
 let speaker_embeddings;
+let colorTracker = new tracking.ColorTracker(['magenta', 'cyan', 'yellow']);
+let colorTrackerTask = tracking.track('#video', colorTracker);
+colorTrackerTask.stop();
+
 setStatus(true, "");
 setTimeout(autoDetect, 2000);       //hacky, ToDo only after camera feed is loaded
 
@@ -176,15 +154,6 @@ async function loadObjectModel() {
     setStatus(true, "");
     objectDetection_button.style.backgroundColor = buttonSuccessColor;
     objectDetection = true;
-}
-
-async function loadDepthModel() {       // Create depth-estimation pipeline
-    setStatus(false, "depth_dect");
-    depth_estimator = await pipeline('depth-estimation', 'onnx-community/depth-anything-v2-small');
-    depthModelLoaded = true;
-    setStatus(true, "");
-    depthDetection_button.style.backgroundColor = buttonSuccessColor;
-    depthDetection = true;
 }
 
 /****************** Ai Stuff **************************/
@@ -254,19 +223,26 @@ async function autoDetect() {
             console.error(error);
         }
     }
-    if (depthDetection) {
-        const { depth } = await depth_estimator(image.src);
-        const middleOfPicture = (image.width * image.height) / 2;
-        console.log(depth.data[middleOfPicture]);
-        addTextToOutput(depth.data[middleOfPicture])
+    if (colourDetection) {
+        middleOfPictureX = image.width / 2;
+        middleOfPictureY = image.height / 2;
     }
     setTimeout(autoDetect, 100);
 }
 
+colorTracker.on('track', function (event) {
+    //const middleOfPicture = (image.width * image.height) / 2;
+    event.data.forEach(function (rect) {
+        if (middleOfPictureY > rect.y && middleOfPictureY < rect.y + rect.height && middleOfPictureX > rect.x && middleOfPictureX < rect.x + rect.width) {
+            console.log(rect.x, rect.y, rect.width, rect.height, rect.color);
+        }
+    });
+});
+
 /****************** Output Stuff **************************/
 
-
 function addTextToOutput(text) {
+    text = getAiOutputTranslation(text);
     if (text !== lastOutput) {
         result.textContent = result.textContent + text + " | ";
         result.scrollTop = result.scrollHeight;     // Auto-scroll to the bottom
@@ -281,7 +257,7 @@ function setStatus(ready, model) {
     model = getTranslation(model);
     if (language === "en") {
         status.textContent = ready ? "Ready" : "Loading " + model + "...";
-    } else if(language === "de") {
+    } else if (language === "de") {
         status.textContent = ready ? "Bereit" : model + " wird geladen...";
     }
 }
