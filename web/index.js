@@ -17,7 +17,8 @@ const result = document.getElementById("result");
 const buttonStandardColor = "gray";
 const buttonSuccessColor = "green";
 
-let lastOutput = "";
+let lastObjectOutput = "";
+let lastColorOutput = "";
 
 let cameraFacingUser = false;
 let middleOfPictureX = 0;
@@ -124,7 +125,7 @@ colorDetection_button.addEventListener(
 /****************** Color Definitions **************************/
 
 tracking.ColorTracker.registerColor('green', function(r, g, b) {
-    return r < 50 && g > 200 && b < 50;
+    return r < 100 && g > 150 && b < 100;
 });
 tracking.ColorTracker.registerColor('red', function(r, g, b) {
     return r > 200 && g < 50 && b < 50;
@@ -133,7 +134,12 @@ tracking.ColorTracker.registerColor('blue', function(r, g, b) {
     return r < 50 && g < 50 && b > 200;
 });
 tracking.ColorTracker.registerColor('yellow', function(r, g, b) {
-    return r > 200 && g > 200 && b < 50;
+    //return r > 200 && g > 200 && b < 100;
+    const threshold = 50;
+    if ((r - b) >= threshold && (g - b) >= threshold) {
+        return true;
+    }
+    return false;
 });
 tracking.ColorTracker.registerColor('cyan', function(r, g, b) {
     return r < 50 && g > 200 && b > 200;
@@ -142,10 +148,10 @@ tracking.ColorTracker.registerColor('magenta', function(r, g, b) {
     return r > 200 && g < 50 && b > 200;
 });
 tracking.ColorTracker.registerColor('white', function(r, g, b) {
-    return r > 200 && g > 200 && b > 200;
+    return r > 230 && g > 230 && b > 230;
 });
 tracking.ColorTracker.registerColor('black', function(r, g, b) {
-    return r < 50 && g < 50 && b < 50;
+    return r < 30 && g < 30 && b < 30;
 });
 
 /****************** Ai Setup **************************/
@@ -231,6 +237,10 @@ async function autoDetect() {
     }
     const image = await getImageFromCamera();
     const rawImage = await RawImage.read(image.src);
+    // if (middleOfPictureX === 0 && middleOfPictureY === 0) {
+    //     middleOfPictureX = image.width / 2;
+    //     middleOfPictureY = image.height / 2;
+    // }
     if (objectDetection) {
         try {
             const {pixel_values, reshaped_input_sizes} = await objectDectProcessor(rawImage);
@@ -251,8 +261,7 @@ async function autoDetect() {
         }
     }
     if (colourDetection) {
-        middleOfPictureX = image.width / 2;
-        middleOfPictureY = image.height / 2;
+        //
     }
     setTimeout(autoDetect, 100);
 }
@@ -260,7 +269,11 @@ async function autoDetect() {
 colorTracker.on('track', function (event) {
     //const middleOfPicture = (image.width * image.height) / 2;
     event.data.forEach(function (rect) {
-        if (middleOfPictureY > rect.y && middleOfPictureY < rect.y + rect.height && middleOfPictureX > rect.x && middleOfPictureX < rect.x + rect.width) {
+        const video = document.getElementById('video');
+        middleOfPictureX = (video.offsetWidth / 2) - 20;
+        middleOfPictureY = (video.offsetHeight /2) - 20;
+        //find out which rectangle intersects the middle of the picture
+        if ((middleOfPictureY > rect.y) && (middleOfPictureY < rect.y + rect.height + 40) && (middleOfPictureX > rect.x) && (middleOfPictureX < rect.x + rect.width + 40)) {
             console.log(rect.x, rect.y, rect.width, rect.height, rect.color);
             addTextToOutput(null, rect.color);
         }
@@ -269,24 +282,29 @@ colorTracker.on('track', function (event) {
 
 /****************** Output **************************/
 
+/// Add text to the output field, values can be null
 function addTextToOutput(aiText, colorText) {
-    let text = lastOutput;
+
     if (aiText !== null) {
         aiText = getAiOutputTranslation(aiText);
-        let fields = text.split('|');
-        text = aiText + " | " + fields[1];
+        if (aiText !== lastObjectOutput) {
+            result.textContent = result.textContent + aiText + " | ";
+            result.scrollTop = result.scrollHeight;     // Auto-scroll to the bottom
+            lastObjectOutput = aiText;
+            if (audioOutput) {
+                playTextToSpeech(aiText);
+            }
+        }
     }
     if (colorText !== null) {
         colorText = getTranslation(colorText);
-        let fields = text.split('|');
-        text = fields[0] + " | " + colorText;
-    }
-    if (text !== lastOutput) {
-        result.textContent = result.textContent + text + " | ";
-        result.scrollTop = result.scrollHeight;     // Auto-scroll to the bottom
-        lastOutput = text;
-        if (audioOutput) {
-            playTextToSpeech(text);
+        if (colorText !== lastColorOutput) {
+            result.textContent = result.textContent + colorText + " | ";
+            result.scrollTop = result.scrollHeight;     // Auto-scroll to the bottom
+            lastColorOutput = colorText;
+            if (audioOutput) {
+                playTextToSpeech(colorText);
+            }
         }
     }
 }

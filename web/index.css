@@ -1,4 +1,4 @@
-
+/* Iris CSS File */
 * {     /* Universal Stuff */
     font-family: "Courier New", monospace;
     line-height: 1.45;
@@ -232,9 +232,4 @@ a { /* background of links */
     #output-container p {
         max-height: 18rem;
     }
-
-
-
-
 }
-
