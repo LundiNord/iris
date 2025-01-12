@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Für Viewportanzeige -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ai Visual Environment Detector">
+    <meta name="keywords" content="AI, Iris, Visual, Environment, Camera">
+    <title>
+        Iris - AI Environment Detector
+    </title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="manifest" href="/web/manifest.json">     <!-- PWA Manifest -->
+    <link id="css_reset" rel="stylesheet" type="text/css" href="reset.css">
+    <link id="css" rel="stylesheet" type="text/css" href="index.css">
+    <script src="libs/tracking-min.js" async type="module"></script>
+    <script src="localisation.js" async type="module" ></script>
+    <script src="index.js" async type="module" ></script>
+</head>
+
+<body>
+<header id="header">
+    <h1 id="title-outside-header">Iris</h1>
+    <div id="navigation" class="flex-container">
+            <h1 id="title-inside-header">Iris</h1>
+            <!-- Side navigation -->
+            <a href="index.html" data-i18n="home">Home</a>
+            <a href="impressum.html" data-i18n="contact">Contact</a>
+            <a href="https://github.com/LundiNord/iris">GitHub</a>
+            <a id="lang">🇩🇪</a>
+    </div>
+</header>
+
+<main class="grid-container">
+
+    <div class="grid-item" id="cameraFeed-container">     <!--Video feed Container-->
+        <section id="cameraFeed">
+            <div id="camera">
+                <video id="video" width="160" height="120" autoplay muted playsinline></video>
+            </div>
+        </section>
+    </div>
+
+    <div class="grid-item" id="config-container">     <!--Config Container-->
+        <button id="camera_dreh_button" data-i18n="turn_camera">Turn Camera</button>
+        <button id="toggleAudioOut" data-i18n="audio_output">Audio Output</button>
+        <button id="toggleObjectDetection" data-i18n="object_dect">Object Detection</button>
+        <button id="toggleColorDetection" data-i18n="color_dect">Color Detection</button>
+    </div>
+
+    <div class="grid-item" id="output-container">     <!--Output Container-->
+        <p id="status"></p>
+        <P id="result"></P>
+    </div>
+
+</main>
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c3242506f1824ef39c459718de1e88f6"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

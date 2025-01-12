@@ -1,0 +1,16 @@
+{
+  "home": "Hauptseite",
+  "contact": "Impressum",
+  "turn_camera": "Kamera drehen",
+  "audio_output": "Audioausgabe",
+  "object_dect": "Objekt erkennung",
+  "color_dect": "Farben erkennung",
+  "green": "Grün",
+  "red": "Rot",
+  "blue": "Blau",
+  "yellow": "Gelb",
+  "cyan": "Cyan",
+  "magenta": "Magenta",
+  "white": "Weiß",
+  "black": "Schwarz"
+}

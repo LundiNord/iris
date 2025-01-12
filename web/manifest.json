@@ -1,0 +1,15 @@
+{
+  "name": "Iris",
+  "short_name": "Iris",
+  "description": "AI Environment Detector",
+  "lang": "en-US",
+  "display": "browser",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "favicon.ico"
+    }
+  ]
+}
