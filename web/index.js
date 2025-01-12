@@ -1,5 +1,5 @@
-import {AutoModel, AutoProcessor, RawImage} from "./libs/xenova_transformers.js";
-import { pipeline } from "./libs/huggingface_transformers.js";
+import {AutoModel, AutoProcessor, RawImage} from "./libs/xenova_transformers.js";   //for Object detection
+import { pipeline } from "./libs/huggingface_transformers.js";  //for ai text to speech
 import {getAiOutputTranslation, getTranslation, language} from './localisation.js';
 
 /****************** Constants **************************/
@@ -14,7 +14,7 @@ let colourDetection = false;
 const status = document.getElementById("status");
 const result = document.getElementById("result");
 
-const buttonStandardColor = "gray";
+const buttonStandardColor = "darkgray";
 const buttonSuccessColor = "green";
 
 let lastObjectOutput = "";
@@ -26,7 +26,7 @@ let middleOfPictureY = 0;
 
 /****************** Camera **************************/
 
-let video = document.querySelector("#video");   // Reference to the video element.
+let video = document.querySelector("#video");   // Reference to the camera video element.
 
 let videoConstraints = {
     video: { facingMode: 'environment' }
@@ -47,7 +47,7 @@ async function refreshCamera() {
 
 /****************** Buttons **************************/
 
-let camera_change_button = document.querySelector('#camera_dreh_button')
+let camera_change_button = document.querySelector('#camera_dreh_button')    //button to turn camera on mobile
 camera_change_button.addEventListener(
     "click",
     (ev) => {
@@ -64,7 +64,7 @@ camera_change_button.addEventListener(
     false,
 );
 
-let audio_button = document.querySelector('#toggleAudioOut')
+let audio_button = document.querySelector('#toggleAudioOut')    //toggle text to speech
 audio_button.addEventListener(
     "click",
     (ev) => {
@@ -134,7 +134,7 @@ tracking.ColorTracker.registerColor('blue', function(r, g, b) {
     return r < 50 && g < 50 && b > 200;
 });
 tracking.ColorTracker.registerColor('yellow', function(r, g, b) {
-    //return r > 200 && g > 200 && b < 100;
+    //return r > 200 && g > 200 && b < 100; //yellow seems to work better with relative values
     const threshold = 50;
     if ((r - b) >= threshold && (g - b) >= threshold) {
         return true;
@@ -165,7 +165,7 @@ let colorTrackerTask = tracking.track('#video', colorTracker);
 colorTrackerTask.stop();
 
 setStatus(true, "");
-setTimeout(autoDetect, 2000);
+setTimeout(autoDetect, 2000);   //run autoDetect every 2 seconds
 
 async function loadAudioModel() {
     setStatus(false, "audio_output");
@@ -189,7 +189,7 @@ async function loadObjectModel() {
     objectDetection = true;
 }
 
-/****************** Ai Stuff **************************/
+/****************** Ai Methods **************************/
 
 async function playTextToSpeech(text) {
     if (!audioModelLoaded) {
@@ -209,10 +209,10 @@ async function playTextToSpeech(text) {
     const source = audioContext.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(audioContext.destination);
-    // Play audio
     source.start(0);
 }
 
+//Function to return a raw image from the camera in the right format for the object detection model
 function getImageFromCamera() {
     return new Promise((resolve) => {
         const video = document.getElementById('video');
@@ -229,6 +229,7 @@ function getImageFromCamera() {
     });
 }
 
+//Runs every 2 seconds to detect objects
 async function autoDetect() {
     if (!cameraLoaded) {
         console.log("Camera not loaded");
@@ -237,10 +238,6 @@ async function autoDetect() {
     }
     const image = await getImageFromCamera();
     const rawImage = await RawImage.read(image.src);
-    // if (middleOfPictureX === 0 && middleOfPictureY === 0) {
-    //     middleOfPictureX = image.width / 2;
-    //     middleOfPictureY = image.height / 2;
-    // }
     if (objectDetection) {
         try {
             const {pixel_values, reshaped_input_sizes} = await objectDectProcessor(rawImage);
@@ -260,21 +257,16 @@ async function autoDetect() {
             console.error(error);
         }
     }
-    if (colourDetection) {
-        //
-    }
     setTimeout(autoDetect, 100);
 }
 
 colorTracker.on('track', function (event) {
-    //const middleOfPicture = (image.width * image.height) / 2;
     event.data.forEach(function (rect) {
         const video = document.getElementById('video');
         middleOfPictureX = (video.offsetWidth / 2) - 20;
         middleOfPictureY = (video.offsetHeight /2) - 20;
         //find out which rectangle intersects the middle of the picture
         if ((middleOfPictureY > rect.y) && (middleOfPictureY < rect.y + rect.height + 40) && (middleOfPictureX > rect.x) && (middleOfPictureX < rect.x + rect.width + 40)) {
-            console.log(rect.x, rect.y, rect.width, rect.height, rect.color);
             addTextToOutput(null, rect.color);
         }
     });
@@ -284,7 +276,6 @@ colorTracker.on('track', function (event) {
 
 /// Add text to the output field, values can be null
 function addTextToOutput(aiText, colorText) {
-
     if (aiText !== null) {
         aiText = getAiOutputTranslation(aiText);
         if (aiText !== lastObjectOutput) {
@@ -309,6 +300,7 @@ function addTextToOutput(aiText, colorText) {
     }
 }
 
+//The Webpage has an element to inform the user about the current status
 function setStatus(ready, model) {
     model = getTranslation(model);
     if (language === "en") {

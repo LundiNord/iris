@@ -1,6 +1,8 @@
+//Script expects translation .json files to be in the languages folder
+//Format like de.json and de_ai.json
 
 /****************** Constants **************************/
-export let language = "en";
+export let language = "en"; // Default language
 let langData = await fetchLanguageData(language);
 let aiLangData = await fetchAiLanguageData(language);
 
@@ -30,7 +32,7 @@ async function setLanguage(lang) {
     updateContent(langData);
 }
 
-// Function to set the language preference  //FixMe
+// Function to set the language preference
 function setLanguagePreference(lang) {
     localStorage.setItem('language', lang);
 }

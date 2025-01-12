@@ -1,4 +1,5 @@
 /* Iris CSS File */
+
 * {     /* Universal Stuff */
     font-family: "Courier New", monospace;
     line-height: 1.45;
@@ -102,7 +103,7 @@ a { /* background of links */
     background: steelblue;
 }
 
-@media (max-width: 40rem){
+@media (max-width: 40rem){  /* Small Screens */
     #navigation a {
         padding: 0.25rem;
     }
@@ -115,7 +116,6 @@ a { /* background of links */
         grid-column: 1;
         grid-row: 1;
         overflow: hidden;
-        /* ToDo padding fehlt noch */
     }
     #config-container {
         grid-column: 1;
@@ -137,7 +137,7 @@ a { /* background of links */
     }
 }
 
-@media (min-width: 40rem) and (max-width: 60rem){
+@media (min-width: 40rem) and (max-width: 60rem){   /* Medium Screens */
 
     .grid-container {
         grid-template-columns: 30rem auto;
