@@ -2,7 +2,7 @@
 
 ![Iris Logo](iris_logo.png)
 
-[Visit Website ](https://mobcomp.nyxnord.de/)
+[Visit Website ](https://mobcomp.nyxnord.de/web)
 
 ## Overview
 
